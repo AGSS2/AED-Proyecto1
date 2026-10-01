@@ -1,0 +1,6 @@
+*.exe
+*.o
+*.obj
+cmake-build-*/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LRU Cache - Visualizador Educativo y Animación Real</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-main text-slate-100 font-sans">
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="logo-icon">LRU</div>
+      <div>
+        <h1 class="nav-title">LRU Cache — Visualizador Educativo</h1>
+        <p class="nav-subtitle">CS2023 Algoritmos y Estructuras de Datos • UTEC 2026-2</p>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button id="btn-toggle-presentation" class="btn btn-secondary">
+        <span class="btn-icon">🎓</span> Modo Video (3-6 min)
+      </button>
+      <button id="btn-record-video" class="btn btn-danger">
+        <span class="btn-icon" id="record-dot">⏺</span> <span id="record-text">Grabar Video</span>
+      </button>
+      <label class="btn btn-outline" for="file-upload">
+        <span class="btn-icon">📁</span> Cargar JSON
+      </label>
+      <input type="file" id="file-upload" accept=".json" style="display:none;">
+    </div>
+  </header>
+
+  <!-- Main Presentation Container (for Video Mode) -->
+  <div id="presentation-overlay" class="presentation-overlay hidden">
+    <div class="presentation-modal">
+      <div class="presentation-header">
+        <span id="pres-slide-num" class="slide-badge">Diapositiva 1 / 6</span>
+        <button id="btn-close-presentation" class="btn-close">&times;</button>
+      </div>
+      <div id="presentation-content" class="presentation-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="presentation-footer">
+        <button id="btn-pres-prev" class="btn btn-outline">◀ Anterior</button>
+        <div class="pres-indicator" id="pres-dots"></div>
+        <button id="btn-pres-next" class="btn btn-primary">Siguiente ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Visualizer Dashboard -->
+  <main class="main-container">
+    <!-- Top Action Bar -->
+    <section class="action-banner">
+      <div class="action-info">
+        <div class="badge-group">
+          <span id="badge-step" class="badge badge-step">Paso 0 / 13</span>
+          <span id="badge-action" class="badge badge-action">INIT</span>
+          <span id="badge-edge" class="badge badge-edge hidden">CASO BORDE</span>
+        </div>
+        <div class="action-command">
+          <span class="cmd-label">Operación:</span>
+          <code id="text-command" class="cmd-text">LRUCache(capacidad = 3)</code>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="playback-controls">
+        <button id="btn-start" class="btn-ctrl" title="Ir al inicio">⏮</button>
+        <button id="btn-prev" class="btn-ctrl" title="Paso anterior">◀</button>
+        <button id="btn-play" class="btn-ctrl btn-play-pause" title="Reproducir / Pausar">▶</button>
+        <button id="btn-next" class="btn-ctrl" title="Paso siguiente">▶</button>
+        <button id="btn-end" class="btn-ctrl" title="Ir al final">⏭</button>
+
+        <div class="speed-selector">
+          <label>Velocidad:</label>
+          <select id="select-speed" class="select-input">
+            <option value="3500">0.5x (Lento/Educativo)</option>
+            <option value="2000" selected>1.0x (Normal)</option>
+            <option value="1200">1.5x (Rápido)</option>
+            <option value="700">2.0x (Flash)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Arena: Hash Table + Doubly Linked List with Curved SVG Connector Pointers -->
+    <div class="visual-arena-wrapper">
+      <svg id="pointer-svg" class="pointer-svg-layer"></svg>
+
+      <!-- Panel Superior: Tabla Hash -->
+      <section class="visual-panel hash-panel" id="panel-hash">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-tag tag-cyan">O(1) Acceso Directo</span>
+            <h2 class="panel-title">Tabla Hash (Separate Chaining)</h2>
+          </div>
+          <span class="panel-meta" id="hash-capacity-label">Capacidad: 6 Buckets [0..5]</span>
+        </div>
+
+        <div class="hash-table-container" id="hash-buckets-container">
+          <!-- Dynamic buckets rendered here -->
+        </div>
+      </section>
+
+      <!-- Panel Inferior: Lista Doblemente Enlazada -->
+      <section class="visual-panel list-panel" id="panel-list">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-tag tag-magenta">O(1) Desalojo y Reorden</span>
+            <h2 class="panel-title">Lista Doblemente Enlazada</h2>
+          </div>
+          <div class="list-meta">
+            <span class="capacity-pill" id="cache-capacity-pill">Elementos: 0 / 3</span>
+          </div>
+        </div>
+
+        <div class="list-lane-wrapper">
+          <div class="list-lane-header">
+            <div class="terminal-marker marker-head">
+              <span class="marker-dot"></span>
+              <span>HEAD / MRU</span>
+              <span class="marker-desc">(Más recientemente usado)</span>
+            </div>
+            <div class="list-lane-guide-line"></div>
+            <div class="terminal-marker marker-tail">
+              <span class="marker-desc">(Menos recientemente usado)</span>
+              <span>TAIL / LRU</span>
+              <span class="marker-dot"></span>
+            </div>
+          </div>
+
+          <div class="doubly-list-track" id="doubly-list-container">
+            <!-- Dynamic nodes rendered here -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Educational Explanation & Complexity Panel -->
+    <section class="explanation-panel">
+      <div class="explanation-col">
+        <h3 class="expl-title">
+          <span class="expl-icon">💡</span> Explicación Técnica del Paso
+        </h3>
+        <p id="text-description" class="expl-desc">
+          Inicialización de la estructura LRU Caché con capacidad 3.
+        </p>
+      </div>
+
+      <div class="complexity-col">
+        <h3 class="expl-title">
+          <span class="expl-icon">⚡</span> Análisis de Complejidad Temporal
+        </h3>
+        <div class="complexity-box">
+          <span class="complexity-tag" id="complexity-badge">O(1)</span>
+          <p id="text-complexity" class="complexity-desc">
+            Búsqueda e inserción en tiempo constante garantizada por la arquitectura dual.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline Scrubber -->
+    <section class="timeline-bar">
+      <div class="timeline-header">
+        <span class="timeline-title">Línea de Tiempo de Eventos C++</span>
+        <span id="timeline-counter" class="timeline-counter">Paso 0 / 13</span>
+      </div>
+      <div class="timeline-track" id="timeline-track">
+        <!-- Rendered timeline items -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Load Embedded JSON Data and Application Scripts -->
+  <script src="events_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
